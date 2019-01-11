@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="author" content="Kodinger">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>百度模拟登陆验证工具</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.bootcss.com/twitter-bootstrap/4.2.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/login.css">
+</head>
+
+<body class="my-login-page">
+    <section class="h-100">
+        <div class="container h-100">
+            <div class="row justify-content-md-center h-100">
+                <div class="card-wrapper">
+                    <div class="brand">
+                        <img src="https://ws4.sinaimg.cn/large/006tNc79ly1fz2q5sr0bjj30660663yy.jpg" alt="logo">
+                    </div>
+                        <div class="card fat">
+                            <div class="card-body">
+                                <h4 class="card-title">百度模拟登陆验证工具</h4>
+                                <form method="POST" action="http://127.0.0.1:8080/login" class="my-login-validation" novalidate="">
+                                    <div class="form-group">
+                                        <label for="email">用户名/电话/邮箱</label>
+                                        <input id="email" type="text" class="form-control" name="email" value="" required autofocus>
+                                        <div class="invalid-feedback">
+                                            不能为空！
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="password">密码
+                                        </label>
+                                        <input id="password" type="password" class="form-control" name="password" required data-eye>
+                                        <div class="invalid-feedback">
+                                            不能为空！
+                                        </div>
+                                    </div>
+                                    <div class="form-group res" style="display:none">
+                                        <div class="input-group input-group-sm mb-3">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text" id="inputGroup-sizing-sm">Small</span>
+                                            </div>
+                                            <input type="text" class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row verify">
+                                        <div class="col-sm-8">
+                                            <label for="verifycode">验证码</label>
+                                            <input type="text" class="form-control" id="verifycode" required>
+                                            <div class="invalid-feedback">
+                                                不能为空！
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <img src="" alt="verifycode" style="width:100%;border: 1px solid #ced4da;border-radius: 3px;margin-top: 27px;">
+                                    </div>
+                                        </div>
+                                        <div class="form-group m-0">
+                                            <button type="submit" class="btn btn-primary btn-block" data-toggle="modal" data-target="#exampleModal">
+                                                登陆
+                                            </button>
+                                        </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="footer">
+                            Copyright &copy; 2018 &mdash; <a href="https://github.com/vanishcode">Vanishcode</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </section>
+    <!-- <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">登录成功</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-2 col-form-label">Email</label>
+                        <div class="col-sm-10">
+                            <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+                </div>
+            </div>
+        </div>
+    </div> -->
+    <!-- 验证 -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">验证</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    账号异常，请选择一种验证方式接收验证码并尝试重新登录：
+                </div>
+                <div class="modal-footer row" style="width:100%;margin-left: 0;margin-right: 0">
+                    <button type="button" class="btn btn-primary col-sm-4" data-target="#vc" data-toggle="modal" data-dismiss="modal">手机</button>
+                    <button type="button" class="btn btn-primary col-sm-4" data-dismiss="modal">邮箱</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 输入验证码 -->
+    <div class="modal fade" id="vc" tabindex="-1" role="dialog" aria-labelledby="vcLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="vcLabel">已发送</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label">接收到的验证码:</label>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" id="inputEmail3">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="succeed()">提交</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/twitter-bootstrap/4.2.1/js/bootstrap.min.js"></script>
+    <script src="js/login.js"></script>
+    <script>
+    function succeed() {
+        $('.verify').hide()
+        $('.res').show()
+    }
+    </script>
+</body>
+
+</html>

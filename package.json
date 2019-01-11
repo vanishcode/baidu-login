@@ -1,0 +1,12 @@
+{
+  "name": "baidu-login",
+  "description": "百度模拟登陆脚本js实现",
+  "repository": {
+    "url": "https://github.com/vanishcode/baidu-login/"
+  },
+  "author": "vanishcode@outlook.com",
+  "scripts": {
+    "start": "node ./app.js",
+    "web": "node ./app.js -web"
+  }
+}
