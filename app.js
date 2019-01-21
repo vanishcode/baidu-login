@@ -1,5 +1,5 @@
 /**
- * @file 程序入口，命令行模式，附带HTML页面操作模式
+ * @file 重构，使用eventproxy控制流程，减少引用，完善web界面
  * @author vanishcode
  * @license MIT
  */

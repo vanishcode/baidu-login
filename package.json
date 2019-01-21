@@ -8,5 +8,11 @@
   "scripts": {
     "start": "node ./app.js",
     "web": "node ./app.js -web"
+  },
+  "dependencies": {
+    "eventproxy": "^1.0.0",
+    "express": "^4.16.4",
+    "superagent": "^4.1.0",
+    "superagent-charset": "^1.2.0"
   }
 }
