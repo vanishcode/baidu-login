@@ -7,12 +7,15 @@ var config = require('./config.json');
 var ip = require('../utils/ip');
 var app = express();
 
+app.use(express.static('public'));
 app.get('/', function (req, res) {
-  res.status(404);
-  res.json({ error: "Bad request." });
+  res.status(200);
+  // res.json({ error: "Bad request." });
+  res.sendFile(__dirname + '/public/index.html')
 });
 
-app.use(express.static('public'));
+
+// app.use(express.favicon());
 
 app.listen(config.port, function () {
   console.log('[' + new Date().toLocaleDateString() + '] App listening on http://' + ip + ':' + config.port);

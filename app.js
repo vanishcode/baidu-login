@@ -1,14 +1,11 @@
 var process = require('process');
 var request = require('superagent');
-var charset = require('superagent-charset');
+// var charset = require('superagent-charset');
 var querystring = require('querystring');
 var url = require('url');
 const { spawn } = require('child_process');
 var fs = require('fs');
-var readline = require('readline').createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
+var readlineSync = require('readline-sync');
 var ep = require('eventproxy')();
 var log = console.log;
 var warn = console.warn;
@@ -16,32 +13,33 @@ var warn = console.warn;
 var cipher = require('./utils/cipher');
 // for web interface~
 var web = process.argv[1];
-var server = require('./web/server');
+// var server = require('./web/server');
 
 // 全局变量
 var username, password, verifyCode, vcodeStr, traceID, token, u;
 
+
 // 开始
-if (web) {
-    // TODO: server logic
-} else {
-    log('【命令行模式】请输入用户名和密码（以空格分开）：')
-    readline.on('line', function (input) {
-        input = input.split(' ');
-        username = input[0];
-        password = input[1];
-        if (username && password) {
-            readline.close();
-            return ep.emit('NameAndPasswordGot');
-        }
-        else {
-            log('错误！必须输入用户名和密码，请检查您的输入！');
-        }
-    })
-}
+//if (web) {
+// TODO: server logic
+// } else {
+log('用户名/邮箱/手机号：');
+username = readlineSync.prompt();
+log('密码：');
+password = readlineSync.prompt();
+// log(username)
+//if (username && password) {
+    ep.emit('NameAndPasswordGot');
+// }//
+// else {
+//     log('错误！必须输入用户名和密码，请检查您的输入！');
+// }
+// // })
+//}
 
 // 得到用户名和密码，获取traceID
 ep.on('NameAndPasswordGot', function () {
+    log('用户名和密码已输入...');
     request
         .get('https://wappass.baidu.com/')
         .end(function (err, res) {
@@ -51,13 +49,14 @@ ep.on('NameAndPasswordGot', function () {
             }
             else {
                 traceID = res.header['trace-id'];
-                return ep.emit('TraceIDGot', traceID);
+                return ep.emit('TraceIDGot');
             }
         })
 });
 
 // 获取服务端时间
-ep.on('TraceIDGot', function (traceID) {
+ep.on('TraceIDGot', function () {
+    log('TraceID已获取...');
     var serverTime;
     request
         .get('https://wappass.baidu.com/wp/api/security/antireplaytoken')
@@ -75,6 +74,8 @@ ep.on('TraceIDGot', function (traceID) {
 
 // 登录
 ep.on('ServerTimeGot', function (serverTime) {
+    log('TraceID已获取...');
+    log('正在进行登陆...');
     var encryptedPassword = cipher(password + serverTime);
     var timeStamp = new Date().getTime() + '_666';
     var loginData = querystring.stringify({
@@ -129,12 +130,11 @@ ep.on('ServerTimeGot', function (serverTime) {
                 tokenuArr = resObj.data.gotoUrl.match('token=(.*?)&u=(.*?)&secstate=');
                 token = tokenuArr[1];
                 u = url.parse(tokenuArr[2]).path;
-                log('需要验证短信或邮箱！');
                 return ep.emit('NeedVerifyMobileOrEmail');
             } else if (resObj.errInfo.no == '500001') {
+                // 全局已经保存
                 vcodeStr = resObj.data.codeString;
-                warn('异常，需要填写验证码！', vcodeStr);
-                return ep.emit('NeedWebVerifyCode');
+                return ep.emit('NeedWebVerifyCode', vcodeStr);
             } else if (resObj.errInfo.no == '0' && resObj.errInfo.msg == '') {
                 return ep.emit('LoginSuccess', cookie);
             }
@@ -143,38 +143,30 @@ ep.on('ServerTimeGot', function (serverTime) {
 
 // 需要验证
 ep.on('NeedVerifyMobileOrEmail', function () {
-    var verifyType;
-    log('请选择验证方式：1.手机 2.邮箱');
-    readline.on('line', function (input) {
-        if (!input) {
-            warn('请输入正确的编号！');
-        } else {
-            readline.close();
-            verifyType = input.toString().trim() == '1' ? 'mobile' : 'email';
-            request
-                .get('https://wappass.baidu.com/passport/authwidget?action=send&tpl=' +
-                    '&type=' + verifyType +
-                    '&token=' + token +
-                    '&from=&skin=&clientfrom=&adapter=2&updatessn=&bindToSmsLogin=&upsms=&finance=')
-                .end(function (err) {
-                    if (err) {
-                        warn(err);
-                    } else {
-                        log('已发送...');
-                        return ep.emit('AlreadySendToUser');
-                    }
-                })
-        }
-    })
+    log('需要验证短信或邮箱！\n请选择验证方式：1.手机 2.邮箱');
+    var optNum = readlineSync.prompt();
+    var verifyType = optNum == '1' ? 'mobile' : 'email';
+    request
+        .get('https://wappass.baidu.com/passport/authwidget?action=send&tpl=' +
+            '&type=' + verifyType +
+            '&token=' + token +
+            '&from=&skin=&clientfrom=&adapter=2&updatessn=&bindToSmsLogin=&upsms=&finance=')
+        .end(function (err) {
+            if (err) {
+                warn(err);
+            } else {
+                return ep.emit('AlreadySendToUser', verifyType);
+            }
+        })
 });
 
 // 已经提交了发送验证码的需求
 ep.on('AlreadySendToUser', function (type) {
-    var vcode;
+    log('已发送...');
     var timeStamp = new Date().getTime() + '_233';
-    rl.on('line', function (input) {
-        vcode = input;
-        rl.close();
+    log('请输入发送给你' + type == 'email' ? '邮箱' : '手机' + '的验证码');
+    var vcode = readlineSync.prompt();
+    if (vcode)
         request
             .get('https://wappass.baidu.com/passport/authwidget' +
                 '?v=' + timeStamp +
@@ -196,15 +188,14 @@ ep.on('AlreadySendToUser', function (type) {
                     warn(err);
                     return;
                 } else {
-                    log('已提交验证！');
-                    ep.emit('AlreadySendCheckVCode', type, authsid);
+                    return ep.emit('AlreadySendCheckVCode', type, authsid);
                 }
-            })
-    });
+            });
 });
 
 // 已经提交了发送邮箱或手机的验证码
 ep.on('AlreadySendCheckVCode', function (type, authsid) {
+    log('已提交验证！');
     request
         .get(decodeURIComponent(u) + '&authsid=' + authsid + '&fromtype=' + type + '&bindToSmsLogin=')
         .end(function (err, res) {
@@ -220,20 +211,19 @@ ep.on('AlreadySendCheckVCode', function (type, authsid) {
 
 // 感觉异常操作，需要验证码（不是发送到手机或邮箱的！）
 ep.on('NeedWebVerifyCode', function (vcodeStr) {
+    warn('异常，需要填写验证码！');
     var codeImg = './web/public/img/code.png'
     request
         .get('https://wappass.baidu.com/cgi-bin/genimage?' + vcodeStr)
         .pipe(fs.createWriteStream(codeImg));
     // 等待下载完毕~
     setTimeout(function () {
-        spawn('open' + codeImg);
-    }, 3000);
-    readline.on('line', function (input) {
-        verifyCode = input.trim();
-        readline.close();
-        serverTime = JSON.parse(res.text).time;
-        return ep.emit('ServerTimeGot', serverTime);
-    })
+        log('下载完毕');
+        spawn('open ' + codeImg);
+    }, 2500);
+    log('请输入验证码');
+    verifyCode = readlineSync.prompt();
+    return ep.emit('NameAndPasswordGot');
 });
 
 // 终于登陆成功，拿到了BDUSS等字段
