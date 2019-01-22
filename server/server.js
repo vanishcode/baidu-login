@@ -4,12 +4,19 @@
  */
 var express = require('express');
 var config = require('./config.json');
+var ip = require('../utils/ip');
 var app = express();
 
+app.use(express.static('public'));
 app.get('/', function (req, res) {
-  res.send('Hello World!');
+  res.status(200);
+  // res.json({ error: "Bad request." });
+  res.sendFile(__dirname + '/public/index.html')
 });
 
+
+// app.use(express.favicon());
+
 app.listen(config.port, function () {
-  console.log('Example app listening on port 3000!');
+  console.log('[' + new Date().toLocaleDateString() + '] App listening on http://' + ip + ':' + config.port);
 });
